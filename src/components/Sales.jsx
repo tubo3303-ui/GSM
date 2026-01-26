@@ -146,8 +146,10 @@ export default function Sales() {
           <h2 >Ventes</h2>
           <div className="sales-controls">
              <input placeholder="Rechercher produit (nom ou SKU)" value={query} onChange={e=>setQuery(e.target.value)} className="search-input-sales" />
-            <button onClick={() => { setShowForm(true); setMessage(''); setSelectedSku(''); setQty(1); setClient(''); }} className="btn btn-primary sales-new-btn" title="Nouvelle vente">Nouvelle vente</button>
-            <button onClick={handleExportSales} className="btn sales-export-btn" title="Exporter en CSV">Exporter CSV</button>
+            <button onClick={() => { setShowForm(true); setMessage(''); setSelectedSku(''); setQty(1); setClient(''); }} className="btn btn-primary sales-new-btn" title="Nouvelle vente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg" style={{width:16, height:16}}><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            Nouvelle vente</button>
+            <button onClick={handleExportSales} className="btn sales-export-btn" title="Exporter en CSV">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg" style={{width:16, height:16}}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg> Exporter CSV</button>
           </div>
         </div>
 
@@ -213,7 +215,7 @@ export default function Sales() {
                             <td data-label="Client">{s.client}</td>
                             <td data-label="Produit">{s.sku}</td>
                             <td data-label="Qté">{s.qty}</td>
-                            <td data-label="Total">{s.total} ariary</td>
+                            <td data-label="Total">{Number(s.total).toFixed(2)}  ariary</td>
                             <td data-label="Date">{new Date(s.date).toLocaleString()}</td>
                             <td data-label="Actions">
                               <IconButton className="ghost" onClick={() => showProductDetails(s.sku)} tooltip="Voir produit">

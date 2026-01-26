@@ -19,10 +19,12 @@ import Users from './Users'
 import ActivityTracking from './ActivityTracking'
 import ToastContainer from './ToastContainer'
 import { getCurrentUser, subscribeAuth } from '../lib/authStore'
+import { useStore } from '../lib/StoreContext'
 
 export default function Dashboard() {
   const [route, setRoute] = useState(window.location.hash || '#/dashboard')
   const [user, setUser] = useState(() => getCurrentUser())
+  const { currentStore, setCurrentStore } = useStore()
 
   useEffect(() => {
     const onHash = () => setRoute(window.location.hash || '#/dashboard')
@@ -44,6 +46,14 @@ export default function Dashboard() {
       }
     }
   }, [user, route])
+
+  useEffect(() => {
+    // Auto-adjust store based on route restrictions
+    // For routes that don't allow "Tous", switch to Majunga if currently on "Tous"
+    if (['#/arrivals', '#/orders', '#/decisions'].includes(route) && currentStore === 'all') {
+      setCurrentStore('majunga')
+    }
+  }, [route, currentStore, setCurrentStore])
 
   const renderContent = () => {
     if (route === '#/user') return <Users />

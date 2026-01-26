@@ -81,10 +81,17 @@ export default function Topbar() {
   const [user, setUser] = useState(() => getCurrentUser())
   const [loadingLogout, setLoadingLogout] = useState(false)
   const [searchFocus, setSearchFocus] = useState(false)
+  const [route, setRoute] = useState(window.location.hash || '#/dashboard')
 
   useEffect(() => {
     const unsub = subscribeAuth(u => setUser(u))
     return unsub
+  }, [])
+
+  useEffect(() => {
+    const onHash = () => setRoute(window.location.hash || '#/dashboard')
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
   const handleLogout = () => {
@@ -108,24 +115,37 @@ export default function Topbar() {
         {(!user || user.role !== 'employee') && (
           <div className="topbar-section topbar-center">
             <div className="store-selector">
-              {['all', 'majunga', 'tamatave'].map((key) => {
-                const labels = { all: 'Toutes', majunga: 'Majunga', tamatave: 'Tamatave' }
-                const active = currentStore === key
-                const allowed = !user || user.role === 'admin' || user.store === key
+              {(() => {
+                // Determine available stores based on current route
+                let availableStores = ['all', 'majunga', 'tamatave']
                 
-                return (
-                  <button
-                    key={key}
-                    disabled={!allowed}
-                    onClick={() => allowed && setCurrentStore(key)}
-                    className={`store-btn ${active ? 'active' : ''} ${!allowed ? 'disabled' : ''}`}
-                    title={!allowed ? 'Accès non autorisé' : `Sélectionner ${labels[key]}`}
-                  >
-                    <span className="store-label">{labels[key]}</span>
-                    {active && <span className="store-indicator"></span>}
-                  </button>
-                )
-              })}
+                if (route === '#/user') {
+                  // Users section: only "Tous"
+                  availableStores = ['all']
+                } else if (['#/arrivals', '#/orders', '#/decisions'].includes(route)) {
+                  // Arrivals, Orders, Decisions sections: only Majunga and Tamatave
+                  availableStores = ['majunga', 'tamatave']
+                }
+                
+                return availableStores.map((key) => {
+                  const labels = { all: 'Toutes', majunga: 'Majunga', tamatave: 'Tamatave' }
+                  const active = currentStore === key
+                  const allowed = !user || user.role === 'admin' || user.store === key
+                  
+                  return (
+                    <button
+                      key={key}
+                      disabled={!allowed}
+                      onClick={() => allowed && setCurrentStore(key)}
+                      className={`store-btn ${active ? 'active' : ''} ${!allowed ? 'disabled' : ''}`}
+                      title={!allowed ? 'Accès non autorisé' : `Sélectionner ${labels[key]}`}
+                    >
+                      <span className="store-label">{labels[key]}</span>
+                      {active && <span className="store-indicator"></span>}
+                    </button>
+                  )
+                })
+              })()}
             </div>
           </div>
         )}

@@ -1588,6 +1588,9 @@ body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Se
   padding: 10px 16px;
   font-weight: 500;
   white-space: nowrap;
+  display:flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .sales-export-btn {
@@ -1596,6 +1599,9 @@ body { margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Se
   background: #4b5563;
   color: white;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .sales-export-btn:hover {

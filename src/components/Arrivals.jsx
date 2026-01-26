@@ -221,7 +221,7 @@ export default function Arrivals() {
     }
   }
 
-  const filtered = arrivals.filter(a => filter === 'all' || a.status === filter)
+  const filtered = filter === 'all' ? arrivals : arrivals.filter(a => a.status === filter)
 
   return (
     <div className="space-y-4">
@@ -411,7 +411,7 @@ aire: {error}
             }`}
           >
             {status === 'all' ? 'Tous' : status === 'pending' ? 'En Attente' : status === 'confirmed' ? 'Confirmés' : 'Annulés'}
-            {` (${arrivals.filter(a => status === 'all' || a.status === status).length})`}
+            {` (${status === 'all' ? arrivals.length : arrivals.filter(a => a.status === status).length})`}
           </button>
         ))}
       </div>
