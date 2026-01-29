@@ -218,20 +218,26 @@ export default function ActivityTracking() {
   )
 }
 */
+
 import React, { useState, useEffect } from 'react'
 import { getToken } from '../lib/authStore'
 import { showToast } from '../lib/toast'
 import { fetchAllLogs, fetchUserLogs, fetchStoreLogs } from '../lib/actionLogStore'
+import { 
+  History, User, Store, Filter, 
+  Search, Calendar, ArrowRight, Download,
+  AlertCircle, CheckCircle2, Info, Pencil, Trash2, Plus
+} from 'lucide-react'
 
-// Utilitaire pour la couleur des badges selon l'action
-const getActionStyle = (action) => {
-  const base = "px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wider";
-  switch (action?.toLowerCase()) {
-    case 'delete': return `${base} bg-red-100 text-red-700 border border-red-200`;
-    case 'update': return `${base} bg-amber-100 text-amber-700 border border-amber-200`;
-    case 'create': return `${base} bg-green-100 text-green-700 border border-green-200`;
-    default: return `${base} bg-blue-100 text-blue-700 border border-blue-200`;
-  }
+const getActionConfig = (action) => {
+  const act = action?.toLowerCase() || '';
+  if (act.includes('delete') || act.includes('suppression')) 
+    return { color: "bg-red-50 text-red-700 border-red-100", icon: <Trash2 size={12}/> };
+  if (act.includes('update') || act.includes('modification')) 
+    return { color: "bg-amber-50 text-amber-700 border-amber-100", icon: <Pencil size={12}/> };
+  if (act.includes('create') || act.includes('creation')) 
+    return { color: "bg-emerald-50 text-emerald-700 border-emerald-100", icon: <Plus size={12}/> };
+  return { color: "bg-blue-50 text-blue-700 border-blue-100", icon: <Info size={12}/> };
 }
 
 export default function ActivityTracking() {
@@ -244,28 +250,19 @@ export default function ActivityTracking() {
   const [stores, setStores] = useState(new Set())
 
   useEffect(() => {
-    // Ne charger les logs que si l'utilisateur est authentifié
     const token = getToken()
-    if (token) {
-      fetchLogs()
-    }
+    if (token) fetchLogs()
   }, [])
 
   const fetchLogs = async () => {
     setLoading(true)
     try {
       let data = []
-      
-      if (filter === 'user' && selectedUser) {
-        data = await fetchUserLogs(selectedUser)
-      } else if (filter === 'store' && selectedStore) {
-        data = await fetchStoreLogs(selectedStore)
-      } else {
-        data = await fetchAllLogs()
-      }
+      if (filter === 'user' && selectedUser) data = await fetchUserLogs(selectedUser)
+      else if (filter === 'store' && selectedStore) data = await fetchStoreLogs(selectedStore)
+      else data = await fetchAllLogs()
       
       setLogs(data)
-
       const storeSet = new Set()
       const userMap = new Map()
       data.forEach(log => {
@@ -275,58 +272,67 @@ export default function ActivityTracking() {
       setUsers(Array.from(userMap.values()))
       setStores(storeSet)
     } catch (e) {
-      showToast('error', 'Erreur lors du chargement')
+      showToast('error', 'Impossible de charger l\'historique')
     } finally {
       setLoading(false)
     }
   }
 
-  const formatDate = (timestamp) => {
-    return new Date(timestamp).toLocaleString('fr-FR', {
-      day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit'
-    })
+  const formatDate = (ts) => {
+    const date = new Date(ts)
+    return {
+      main: date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }),
+      time: date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+    }
   }
 
   return (
-    <div className="max-w-100 mx-auto p-4 md:p-8 bg-gray-50 min-h-screen">
-      <div className="mb-8">
-        <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">
-          Historique d'activité
-        </h1>
-        <p className="mt-2 text-sm text-gray-600">
-          Consultez et filtrez les actions effectuées sur l'ensemble de vos points de vente.
-        </p>
+    <div className="min-h-screen bg-[#f8fafc] p-4 md:p-10 font-sans text-slate-900">
+      
+      {/* Header avec Actions */}
+      <div className="max-w-7xl mx-15 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-10">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="bg-blue-600 p-2 rounded-lg text-white shadow-lg shadow-blue-200">
+              <History size={24} />
+            </div>
+            <h1 className="text-3xl font-black tracking-tight text-slate-900">Suivies des actions</h1>
+          </div>
+          <p className="text-slate-500 font-medium">Surveillance en temps réel des flux de données et actions utilisateurs.</p>
+        </div>
+        
       </div>
 
-      {/* Barre de Filtres Moderne */}
-      <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-8 flex flex-wrap items-end gap-6">
-        <div className="flex flex-col gap-2">
-          <label className="text-xs font-bold text-gray-500 uppercase">Filtrer par</label>
-          <div className="inline-flex p-1 bg-gray-100 rounded-lg">
-            {['all', 'user', 'store'].map((f) => (
+      <div className="max-w-9xl mx-15 space-y-6">
+        
+        {/* Barre de Filtres Flottante */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 flex flex-col lg:flex-row gap-2">
+          <div className="flex bg-slate-100 p-1 rounded-xl">
+            {[
+              { id: 'all', label: 'Global', icon: <History size={16}/> },
+              { id: 'user', label: 'Par Employé', icon: <User size={16}/> },
+              { id: 'store', label: 'Par Magasin', icon: <Store size={16}/> }
+            ].map((f) => (
               <button
-                key={f}
-                onClick={() => { setFilter(f); if(f==='all') fetchLogs(); }}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                  filter === f ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'
+                key={f.id}
+                onClick={() => { setFilter(f.id); if(f.id==='all') fetchLogs(); }}
+                className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold transition-all ${
+                  filter === f.id ? 'bg-white text-blue-600 shadow-md' : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                {f === 'all' ? 'Tout' : f === 'user' ? 'Employé' : 'Magasin'}
+                {f.icon} {f.label}
               </button>
             ))}
           </div>
-        </div>
 
-        {filter !== 'all' && (
-          <div className="flex flex-col gap-2 flex-grow max-w-xs animate-in fade-in slide-in-from-left-2">
-            <label className="text-xs font-bold text-gray-500 uppercase">Sélectionner {filter === 'user' ? 'un employé' : 'un magasin'}</label>
-            <div className="flex gap-2">
+          {filter !== 'all' && (
+            <div className="flex-grow flex flex-col sm:flex-row gap-2 animate-in zoom-in-95 duration-200">
               <select
                 value={filter === 'user' ? selectedUser : selectedStore}
                 onChange={(e) => filter === 'user' ? setSelectedUser(e.target.value) : setSelectedStore(e.target.value)}
-                className="block w-full rounded-lg border-gray-300 bg-gray-50 text-sm focus:ring-blue-500 focus:border-blue-500 p-2"
+                className="flex-grow bg-slate-50 border-none rounded-xl text-sm font-semibold focus:ring-2 focus:ring-blue-500/20 px-4"
               >
-                <option value="">Choisir...</option>
+                <option value="">Sélectionner {filter === 'user' ? 'un compte' : 'un point de vente'}...</option>
                 {filter === 'user' 
                   ? users.map(u => <option key={u.id} value={u.id}>{u.displayName}</option>)
                   : Array.from(stores).map(s => <option key={s} value={s}>{s}</option>)
@@ -334,87 +340,103 @@ export default function ActivityTracking() {
               </select>
               <button
                 onClick={fetchLogs}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                className="bg-slate-900 hover:bg-slate-800 text-white px-8 py-2 rounded-xl text-sm font-bold transition-transform active:scale-95"
               >
-                Appliquer
+                Filtrer
               </button>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* Table Section */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200 text-left">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Utilisateur</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Action</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Description</th>
-                <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Magasin</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {loading ? (
-                 [...Array(5)].map((_, i) => (
-                    <tr key={i} className="animate-pulse">
-                      <td colSpan="5" className="px-6 py-4"><div className="h-4 bg-gray-100 rounded w-full"></div></td>
-                    </tr>
-                 ))
-              ) : logs.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="px-6 py-12 text-center text-gray-400 italic">
-                    Aucune donnée disponible
-                  </td>
+        {/* Table d'activité */}
+        <div className="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden transition-all">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/50 border-b border-slate-100">
+                  <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Temporalité</th>
+                  <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Intervenant</th>
+                  <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Type d'Action</th>
+                  <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Détails de l'opération</th>
+                  <th className="px-8 py-5 text-[11px] font-black text-slate-400 uppercase tracking-[0.2em] text-right">Localisation</th>
                 </tr>
-              ) : (
-                logs.map((log) => (
-                  <tr key={log.id} className="hover:bg-blue-50/30 transition-colors group">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {formatDate(log.timestamp)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs mr-3">
-                          {log.user?.displayName?.charAt(0) || '?'}
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold text-gray-900">{log.user?.displayName || 'Supprimé'}</div>
-                          <div className="text-xs text-gray-400">@{log.user?.username}</div>
-                        </div>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {loading ? (
+                  [...Array(6)].map((_, i) => (
+                    <tr key={i} className="animate-pulse">
+                      <td colSpan="5" className="px-8 py-6"><div className="h-6 bg-slate-100 rounded-lg w-full"></div></td>
+                    </tr>
+                  ))
+                ) : logs.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="px-8 py-20 text-center">
+                      <div className="flex flex-col items-center gap-3 opacity-40">
+                        <Search size={48} className="text-slate-300" />
+                        <p className="text-lg font-bold text-slate-400 italic">Aucune trace d'activité trouvée</p>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={getActionStyle(log.action)}>
-                        {log.action}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 max-w-md">
-                      <span className="line-clamp-1 group-hover:line-clamp-none transition-all">
-                        {log.description}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium text-gray-900">
-                      {log.store ? (
-                        <span className="bg-gray-100 px-2 py-1 rounded text-gray-600">{log.store}</span>
-                      ) : (
-                        <span className="text-gray-300">—</span>
-                      )}
-                    </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-        
-        {/* Footer de la table */}
-        <div className="bg-gray-50 px-6 py-4 border-t border-gray-200 flex justify-between items-center">
-          <span className="text-sm text-gray-500 font-medium">
-            Total : <span className="text-blue-600">{logs.length}</span> actions enregistrées
-          </span>
+                ) : (
+                  logs.map((log) => {
+                    const config = getActionConfig(log.action);
+                    const dateInfo = formatDate(log.timestamp);
+                    return (
+                      <tr key={log.id} className="hover:bg-blue-50/20 transition-colors group">
+                        <td className="px-8 py-5 whitespace-nowrap">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-bold text-slate-700">{dateInfo.main}</span>
+                            <span className="text-xs font-medium text-slate-400">{dateInfo.time}</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5 whitespace-nowrap">
+                          <div className="flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center text-slate-600 font-black text-xs shadow-sm border border-white">
+                              {log.user?.displayName?.charAt(0) || '?'}
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-sm font-bold text-slate-900 leading-none">{log.user?.displayName || 'Utilisateur inconnu'}</span>
+                              <span className="text-[11px] font-medium text-slate-400 mt-1">@{log.user?.username || '—'}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-8 py-5 whitespace-nowrap">
+                          <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black border ${config.color}`}>
+                            {config.icon}
+                            {log.action}
+                          </span>
+                        </td>
+                        <td className="px-8 py-5">
+                          <p className="text-sm text-slate-600 font-medium line-clamp-1 group-hover:line-clamp-none max-w-sm transition-all">
+                            {log.description}
+                          </p>
+                        </td>
+                        <td className="px-8 py-5 whitespace-nowrap text-right">
+                          {log.store ? (
+                            <span className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-lg">
+                              <Store size={12} /> {log.store}
+                            </span>
+                          ) : (
+                            <span className="text-slate-200 text-xs">— System —</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+          
+          <div className="bg-slate-50/80 px-8 py-4 border-t border-slate-100 flex justify-between items-center">
+            <div className="flex items-center gap-2 text-sm font-bold text-slate-400">
+              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+              Système de monitoring actif
+            </div>
+            <span className="text-sm font-black text-slate-500 italic">
+              {logs.length} entrées <span className="text-slate-300 mx-2">|</span> Page 1/1
+            </span>
+          </div>
         </div>
       </div>
     </div>

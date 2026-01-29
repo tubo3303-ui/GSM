@@ -3,7 +3,7 @@ import { ChevronRight, Home } from 'lucide-react'
 
 export default function Breadcrumb({ route }) {
   const getBreadcrumbs = () => {
-    const breadcrumbs = [{ label: 'Accueil', href: '#/dashboard' }]
+    const breadcrumbs = [{  href: '#/dashboard' }]
     
     const routes = {
       '#/dashboard': { label: 'Tableau de bord' },
@@ -16,9 +16,9 @@ export default function Breadcrumb({ route }) {
     }
 
     const current = routes[route] || { label: 'Page' }
-    if (route !== '#/dashboard') {
+    
       breadcrumbs.push(current)
-    }
+    
 
     return breadcrumbs
   }
@@ -35,12 +35,12 @@ export default function Breadcrumb({ route }) {
             )}
             {index === breadcrumbs.length - 1 ? (
               <span className="breadcrumb-current">
-                {index === 0 && <Home size={16} className="breadcrumb-icon" />}
+                {index === 0 && <svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="#666565" fillRule="evenodd" d="M11.293 3.293a1 1 0 0 1 1.414 0l6 6l2 2a1 1 0 0 1-1.414 1.414L19 12.414V19a2 2 0 0 1-2 2h-3a1 1 0 0 1-1-1v-3h-2v3a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-6.586l-.293.293a1 1 0 0 1-1.414-1.414l2-2z" clipRule="evenodd"></path></svg> }
                 {crumb.label}
               </span>
             ) : (
               <a href={crumb.href} className="breadcrumb-link">
-                {index === 0 && <Home size={16} className="breadcrumb-icon" />}
+                {index === 0 && <svg xmlns="http://www.w3.org/2000/svg" width={24} height={24} viewBox="0 0 24 24"><path fill="#666565" fillRule="evenodd" d="M11.293 3.293a1 1 0 0 1 1.414 0l6 6l2 2a1 1 0 0 1-1.414 1.414L19 12.414V19a2 2 0 0 1-2 2h-3a1 1 0 0 1-1-1v-3h-2v3a1 1 0 0 1-1 1H7a2 2 0 0 1-2-2v-6.586l-.293.293a1 1 0 0 1-1.414-1.414l2-2z" clipRule="evenodd"></path></svg>}
                 {crumb.label}
               </a>
             )}

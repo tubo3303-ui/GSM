@@ -34,16 +34,13 @@ export default function StockKpis() {
       <div className="kpi-card kpi-products">
         <div className="kpi-header">
           <div className="kpi-icon products-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-              <line x1="12" y1="22.08" x2="12" y2="12"></line>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width={16} height={16} viewBox="0 0 16 16"><path fill="#fff" d="M12 6V0H4v6H0v7h16V6zm-5 6H1V7h2v1h2V7h2zM5 6V1h2v1h2V1h2v5zm10 6H9V7h2v1h2V7h2zM0 16h3v-1h10v1h3v-2H0z"></path></svg>
           </div>
-          <div className="kpi-title">Produits</div>
+          
         </div>
-        <div className="kpi-value">{loading ? '…' : kpis.productsCount}</div>
-        <div className="kpi-unit">total</div>
+        <div className="kpi-value">
+          <div className="kpi-title">Produits</div>{loading ? '…' : kpis.productsCount}</div>
+        
       </div>
       
       <div className="kpi-card kpi-quantity">
@@ -54,10 +51,12 @@ export default function StockKpis() {
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
           </div>
-          <div className="kpi-title">Quantité totale</div>
+          
         </div>
-        <div className="kpi-value">{loading ? '…' : kpis.totalItems}</div>
-        <div className="kpi-unit">unités</div>
+        <div className="kpi-value">
+          <div className="kpi-title">Quantité totale</div>
+          {loading ? '…' : kpis.totalItems} Unités</div>
+        
       </div>
       
       <div className="kpi-card kpi-value-stock">
@@ -68,10 +67,12 @@ export default function StockKpis() {
               <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
             </svg>
           </div>
-          <div className="kpi-title">Valeur totale</div>
+          
         </div>
-        <div className="kpi-value">{loading ? '…' : kpis.totalValue.toLocaleString('fr-FR', {maximumFractionDigits: 2})}</div>
-        <div className="kpi-unit">Ar</div>
+        <div className="kpi-value">
+          <div className="kpi-title">Valeur totale</div>
+          {loading ? '…' : kpis.totalValue.toLocaleString('fr-FR', {maximumFractionDigits: 2})} Ar</div>
+        
       </div>
       
       <div className="kpi-card kpi-low-stock">
@@ -83,10 +84,12 @@ export default function StockKpis() {
               <line x1="12" y1="17" x2="12.01" y2="17"></line>
             </svg>
           </div>
-          <div className="kpi-title">Bas stock (&lt;5)</div>
+          
         </div>
-        <div className="kpi-value">{loading ? '…' : kpis.lowStock}</div>
-        <div className="kpi-unit">alerte</div>
+        <div className="kpi-value">
+          <div className="kpi-title">Bas stock (&lt;5)</div>
+          {loading ? '…' : kpis.lowStock} Alerte</div>
+        
       </div>
     </div>
   )

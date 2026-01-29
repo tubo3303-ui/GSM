@@ -9,6 +9,7 @@
     "start:all": "powershell -ExecutionPolicy Bypass -File start-all.ps1"
   },
   "dependencies": {
+    "@fontsource/roboto": "^5.2.9",
     "chart.js": "^4.5.1",
     "cors": "^2.8.5",
     "lucide-react": "^0.562.0",

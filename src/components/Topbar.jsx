@@ -75,6 +75,7 @@ export default function Topbar() {
 import React, { useState, useEffect } from 'react'
 import { useStore } from '../lib/StoreContext'
 import { getCurrentUser, logout, subscribeAuth } from '../lib/authStore'
+import  {LogOut} from 'lucide-react'
 
 export default function Topbar() {
   const { currentStore, setCurrentStore } = useStore()
@@ -168,7 +169,9 @@ export default function Topbar() {
                 {loadingLogout ? (
                   <span className="spinner-small"></span>
                 ) : (
-                  <span className="iconify" data-icon="mdi:logout"></span>
+                  <span className="iconify">
+                    <LogOut />
+                  </span>
                 )}
               </button>
             )}

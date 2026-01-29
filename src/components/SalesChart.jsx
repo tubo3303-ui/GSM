@@ -1,102 +1,4 @@
-/*import React, { useEffect, useState } from 'react'
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js'
-import { Line } from 'react-chartjs-2'
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend)
-
-import { getSales, subscribe, refreshSales } from '../lib/salesStore'
-import { useStore } from '../lib/StoreContext'
-
-function monthKey(date) {
-  const d = new Date(date)
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-
-function lastNMonths(n = 6) {
-  const res = []
-  const now = new Date()
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    res.push({ key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, label: d.toLocaleString(undefined, { month: 'short' }) })
-  }
-  return res
-}
-
-const options = {
-  responsive: true,
-  maintainAspectRatio: true,
-  plugins: {
-    legend: { 
-      position: 'top',
-      labels: {
-        font: { size: 12 },
-        padding: 12,
-      }
-    },
-    title: { display: false },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      ticks: { font: { size: 11 } }
-    },
-    x: {
-      ticks: { font: { size: 11 } }
-    }
-  }
-}
-
-export default function SalesChart() {
-  const { currentStore } = useStore()
-  const [chartData, setChartData] = useState(() => {
-    const months = lastNMonths(6)
-    return {
-      labels: months.map(m => m.label),
-      datasets: [{ label: 'Chiffre d\'affaires', data: months.map(() => 0), borderColor: 'rgb(59, 246, 184)', backgroundColor: 'rgb(29, 99, 212)', tension: 0.3 }]
-    }
-  })
-
-  useEffect(() => {
-    let mounted = true
-    const compute = (sales) => {
-      const months = lastNMonths(6)
-      const map = new Map(months.map(m => [m.key, 0]))
-      for (const s of sales) {
-        try {
-          const k = monthKey(s.date)
-          if (map.has(k)) {
-            map.set(k, map.get(k) + (Number(s.total) || 0))
-          }
-        } catch (e) { }
-      }
-      const labels = months.map(m => m.label)
-      const data = months.map(m => map.get(m.key) || 0)
-      setChartData({ labels, datasets: [{ label: "Chiffre d'affaires", data, borderColor: 'rgb(59, 246, 146)', backgroundColor: 'rgba(59,130,246,0.2)', tension: 0.3 }] })
-    }
-
-    setTimeout(() => {
-      // refresh then compute
-      refreshSales(currentStore).catch(()=>{}).finally(() => {
-        if (!mounted) return
-        compute(getSales(currentStore))
-      })
-    }, 0)
-    const unsub = subscribe(() => compute(getSales(currentStore)))
-    return () => { mounted = false; unsub() }
-  }, [currentStore])
-
-  return <Line options={options} data={chartData} />
-}
-*/
 import React, { useEffect, useState, useRef } from 'react'
 import {
   Chart as ChartJS,
@@ -110,6 +12,7 @@ import {
   Filler, // Requis pour le remplissage sous la courbe
 } from 'chart.js'
 import { Line } from 'react-chartjs-2'
+import { TrendingUp, TrendingDown } from 'lucide-react'
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler)
 
@@ -150,7 +53,7 @@ const options = {
       borderColor: 'rgba(59, 246, 184, 0.5)',
       borderWidth: 1,
       padding: 14,
-      titleFont: { size: 13, weight: 'bold', family: 'Inter, sans-serif' },
+      titleFont: { size: 13, weight: 'thin', family: 'Inter, sans-serif' },
       bodyFont: { size: 12, family: 'Inter, sans-serif' },
       displayColors: false,
       titleColor: '#f0fdfa',
@@ -164,12 +67,12 @@ const options = {
     y: {
       beginAtZero: true,
       grid: { 
-        color: 'rgba(14, 165, 233, 0.08)', 
+        color: 'rgba(255, 255, 255, 0.08)', 
         drawBorder: false,
         lineWidth: 1
       },
       ticks: { 
-        font: { size: 11, family: 'Inter, sans-serif', weight: '500' },
+        font: { size: 11, family: 'Inter, sans-serif'},
         color: '#64748b',
         callback: (value) => value.toLocaleString('fr-FR')
       }
@@ -177,7 +80,7 @@ const options = {
     x: {
       grid: { display: false, drawBorder: false },
       ticks: { 
-        font: { size: 11, family: 'Inter, sans-serif', weight: '500' },
+        font: { size: 11, family: 'Inter, sans-serif' },
         color: '#64748b'
       }
     }
@@ -191,6 +94,7 @@ export default function SalesChart() {
     labels: [],
     datasets: []
   })
+  const [variation, setVariation] = useState({ percentage: 0, isPositive: false, yesterdayTotal: 0, todayTotal: 0 })
 
   useEffect(() => {
     let mounted = true
@@ -202,6 +106,20 @@ export default function SalesChart() {
       sales.forEach(s => {
         const k = monthKey(s.date)
         if (map.has(k)) map.set(k, map.get(k) + (Number(s.total) || 0))
+      })
+
+      // Calcul de la variation (dernier mois vs mois précédent)
+      const lastMonthTotal = map.get(months[months.length - 1]?.key) || 0
+      const prevMonthTotal = map.get(months[months.length - 2]?.key) || 0
+      let percentage = 0
+      if (prevMonthTotal > 0) {
+        percentage = ((lastMonthTotal - prevMonthTotal) / prevMonthTotal) * 100
+      }
+      setVariation({
+        percentage: Math.abs(percentage),
+        isPositive: lastMonthTotal >= prevMonthTotal,
+        yesterdayTotal: prevMonthTotal,
+        todayTotal: lastMonthTotal
       })
 
       const chart = chartRef.current
@@ -242,8 +160,31 @@ export default function SalesChart() {
   }, [currentStore])
 
   return (
-    <div style={{ height: '280px', width: '100%', position: 'relative' }}>
-      <Line ref={chartRef} options={options} data={chartData} />
+    <div className="flex flex-col gap-4">
+      <div className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${variation.isPositive ? 'bg-green-50' : 'bg-red-50'}`}>
+          {variation.isPositive ? (
+            <TrendingUp className="text-green-600" size={20} />
+          ) : (
+            <TrendingDown className="text-red-600" size={20} />
+          )}
+          <div className="flex flex-col">
+            <span className={`text-sm font-semibold ${variation.isPositive ? 'text-green-700' : 'text-red-700'}`}>
+              {variation.isPositive ? '+' : ''}{variation.percentage.toFixed(1)}%
+            </span>
+            <span className="text-xs text-gray-600">
+              vs mois précédent
+            </span>
+          </div>
+        </div>
+        <div className="text-xs text-gray-500">
+          <div>Précédent: {variation.yesterdayTotal.toLocaleString('fr-FR')} Ar</div>
+          <div>Dernier: {variation.todayTotal.toLocaleString('fr-FR')} Ar</div>
+        </div>
+      </div>
+      <div className="modern-chart-container  " style={{ height: '320px', width: '100%', position: 'relative' }}>
+        <Line ref={chartRef} options={options} data={chartData} />
+      </div>
     </div>
   )
 }

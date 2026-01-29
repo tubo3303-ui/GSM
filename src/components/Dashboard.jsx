@@ -4,6 +4,7 @@ import Topbar from './Topbar'
 import Breadcrumb from './Breadcrumb'
 import KpiCard from './KpiCard'
 import ActivityList from './ActivityList'
+import CompanyCard from './CompanyCard'
 import StockKpis from './StockKpis'
 import SalesKpis from './SalesKpis'
 import LowStockAlerts from './LowStockAlerts'
@@ -82,8 +83,11 @@ export default function Dashboard() {
     return (
       <div className="dashboard-container">
 
+        {/* Company Presentation */}
+        <CompanyCard />
+
         {/* Stock Section */}
-        <section className="dashboard-section">
+        <section className="dashboard-section ">
          
                 <StockKpis />
           
@@ -100,23 +104,25 @@ export default function Dashboard() {
         {/* Charts and Activity Section */}
         <section className="widgets">
           <div className="card chart-container">
-            <h3 className="chart-title">Ventes par jour (30 jours)</h3>
+            <p className="chart-title">Ventes par jour (30 jours)</p>
             <div className="chart-wrapper">
               <SalesDailyChart />
             </div>
+            
           </div>
-          <div className="card chart-container">
-            <h3 className="chart-title">Graphique des ventes (par mois)</h3>
+          <div className="card chart-container ">
+            <p className="chart-title">Graphique des ventes (par mois)</p>
             <div className="chart-wrapper">
               <SalesChart />
             </div>
+            
           </div>
         </section>
 
         {/* Categories Section */}
         <section className="widgets">
           <div className="card chart-container">
-            <h3 className="chart-title">Catégories de produits</h3>
+            <p className="chart-title">Catégories de produits</p>
             <div className="chart-wrapper">
               <ProductCategoriesChart />
             </div>

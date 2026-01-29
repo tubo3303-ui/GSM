@@ -120,11 +120,11 @@ export default function ProductCategoriesChart() {
   }, [currentStore])
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div className="modern-chart-container" style={{ width: '100%', height: '100%', position: 'relative' }}>
       {chartData.labels.length > 0 ? (
         <Doughnut options={options} data={chartData} />
       ) : (
-        <div style={{ textAlign: 'center', padding: '20px', color: '#9ca3af' }}>
+        <div style={{ textAlign: 'center', padding: '20px', color: '#9ca3af', fontFamily: 'Inter, sans-serif' }}>
           Aucun produit disponible
         </div>
       )}

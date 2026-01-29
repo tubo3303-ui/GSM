@@ -3,6 +3,7 @@ import Dashboard from './components/Dashboard'
 import Login from './components/Login'
 import { useAuth } from './lib/AuthContext'
 import { initSocket, closeSocket } from './lib/socketService'
+import '@fontsource/roboto/300.css'
 
 export default function App() {
   const { user, isLoading } = useAuth()
